@@ -4,22 +4,28 @@ A modern and responsive Pokémon web application built using **React**, **Vite**
 
 ## 🌐 Live Demo
 
-**https://pokeverse-gules.vercel.app/**
+https://pokeverse-gules.vercel.app/
 
-## 📸 Screenshot
+## 📸 Preview
 
 ![pokemon](./screenshots/home.png.png)
+
+---
 
 ## ✨ Features
 
 * 🔍 Search Pokémon by name
 * 📖 Detailed Pokémon information
-* ❤️ Add Pokémon to Favorites
-* ⚔️ Compare Pokémon stats
-* 🌍 Browse different Pokémon regions
-* 👑 Legendary Pokémon section
-* 🎨 Modern responsive UI
+* ❤️ Favorites System
+* ⚔️ Compare Pokémon
+* 👑 Legendary Pokémon
+* 🌍 Pokémon Regions
+* 🎨 Dark / Light Theme
+* 📱 Fully Responsive Design
 * ⚡ Fast performance with Vite
+* 💫 Smooth animations
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -28,6 +34,10 @@ A modern and responsive Pokémon web application built using **React**, **Vite**
 * Tailwind CSS
 * JavaScript
 * PokéAPI
+* Framer Motion
+* GSAP
+
+---
 
 ## 🚀 Installation
 
@@ -41,28 +51,33 @@ npm install
 npm run dev
 ```
 
+---
+
 ## 📂 Folder Structure
 
-```text
-src/
- ├── api/
- ├── assets/
- ├── components/
- ├── context/
- ├── data/
- ├── hooks/
- ├── pages/
- ├── utils/
 ```
+src
+ ├── api
+ ├── assets
+ ├── components
+ ├── context
+ ├── data
+ ├── hooks
+ ├── pages
+ └── utils
+```
+
+---
 
 ## 📌 Future Improvements
 
 * Pokémon Battle Simulator
-* Team Builder
-* Evolution Tree
-* Pokémon Sounds
-* Better Animations
-* Dark / Light Theme
+* Multiplayer Team Sharing
+* Trainer Profiles
+* Offline Support (PWA)
+* AI Pokémon Recommendations
+
+---
 
 ## 👨‍💻 Author
 
