@@ -6,6 +6,10 @@ A modern and responsive Pokémon web application built using **React**, **Vite**
 
 **https://pokeverse-gules.vercel.app/**
 
+## 📸 Screenshot
+
+![pokemon](./screenshots/home.png.png)
+
 ## ✨ Features
 
 * 🔍 Search Pokémon by name
