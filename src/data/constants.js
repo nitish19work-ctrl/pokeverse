@@ -1,8 +1,20 @@
+import { FORM_CATEGORIES } from '../utils/pokemonForms';
+
 export const POKEAPI_BASE = 'https://pokeapi.co/api/v2';
 
-export const TOTAL_POKEMON = 1025;
+export const TOTAL_POKEMON = 1302;
+
+export const NATIONAL_DEX_COUNT = 1025;
 
 export const POKEMON_PER_PAGE = 24;
+
+export const FORM_FILTERS = [
+  { id: FORM_CATEGORIES.ALL, label: 'All Pokémon' },
+  { id: FORM_CATEGORIES.NATIONAL, label: 'National Dex' },
+  { id: FORM_CATEGORIES.MEGA, label: 'Mega Evolution' },
+  { id: FORM_CATEGORIES.REGIONAL, label: 'Regional Forms' },
+  { id: FORM_CATEGORIES.ALTERNATE, label: 'Alternate Forms' },
+];
 
 export const TYPE_COLORS = {
   normal: { bg: '#A8A878', text: '#fff' },
@@ -113,6 +125,7 @@ export const HERO_POKEMON = { id: 25, name: 'pikachu' };
 export const NAV_LINKS = [
   { path: '/', label: 'Home' },
   { path: '/pokedex', label: 'Pokédex' },
+  { path: '/search', label: 'Search' },
   { path: '/regions', label: 'Regions' },
   { path: '/types', label: 'Types' },
   { path: '/legendary', label: 'Legendary' },
@@ -121,3 +134,11 @@ export const NAV_LINKS = [
   { path: '/compare', label: 'Compare' },
   { path: '/about', label: 'About' },
 ];
+
+export const SITE_URL = 'https://pokeverse.app';
+
+export const SEO_DEFAULT = {
+  title: 'PokéVerse — Premium Pokémon Experience',
+  description: 'Explore every Pokémon, Mega Evolutions, regional forms, build teams, compare stats, and discover legendary Pokémon across all generations.',
+  image: '/pokeball.svg',
+};

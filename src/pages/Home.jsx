@@ -8,7 +8,7 @@ import SearchBar from '../components/ui/SearchBar';
 import RippleButton from '../components/ui/RippleButton';
 import PokemonCard from '../components/pokemon/PokemonCard';
 import { FadeIn, SlideIn, ScaleIn } from '../components/ui/PageTransition';
-import { fetchPokemon, fetchPokemonBatch, getPokemonImage } from '../api/pokeapi';
+import { fetchPokemon, fetchPokemonBatch, getPokemonImage, fetchAllPokemonEntries } from '../api/pokeapi';
 import {
   TRENDING_POKEMON,
   FEATURED_POKEMON,
@@ -27,8 +27,11 @@ export default function Home() {
   const [trending, setTrending] = useState([]);
   const [featured, setFeatured] = useState([]);
   const [legendary, setLegendary] = useState([]);
+  const [allNames, setAllNames] = useState([]);
 
   useEffect(() => {
+    fetchAllPokemonEntries().then(setAllNames).catch(() => {});
+
     fetchPokemon(HERO_POKEMON.name).then(setHeroPokemon).catch(() => {});
 
     Promise.all([
@@ -52,6 +55,7 @@ export default function Home() {
         duration: 1.2,
         ease: 'power4.out',
         delay: 0.2,
+        clearProps: 'transform,opacity',
       });
 
       gsap.from('.hero-subtitle', {
@@ -60,6 +64,7 @@ export default function Home() {
         duration: 1,
         ease: 'power3.out',
         delay: 0.5,
+        clearProps: 'transform,opacity',
       });
 
       gsap.from('.hero-cta', {
@@ -68,6 +73,7 @@ export default function Home() {
         duration: 0.8,
         ease: 'power3.out',
         delay: 0.8,
+        clearProps: 'transform,opacity',
       });
 
       gsap.from('.hero-search', {
@@ -76,6 +82,7 @@ export default function Home() {
         duration: 0.8,
         ease: 'power3.out',
         delay: 1,
+        clearProps: 'transform,opacity',
       });
 
       if (pokemonRef.current) {
@@ -120,17 +127,17 @@ export default function Home() {
   ];
 
   return (
-    <div ref={heroRef}>
+    <div ref={heroRef} className="overflow-x-hidden">
       <ParticleBackground count={50} />
 
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        <div className="hero-glow absolute top-1/4 right-1/4 w-96 h-96 bg-poke-yellow/20 rounded-full blur-[120px]" />
-        <div className="hero-glow absolute bottom-1/4 left-1/4 w-80 h-80 bg-poke-blue/20 rounded-full blur-[100px]" />
+      <section className="relative min-h-[70vh] flex items-center overflow-x-hidden">
+        <div className="hero-glow absolute top-1/4 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-poke-yellow/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="hero-glow absolute bottom-1/4 left-1/4 w-48 sm:w-80 h-48 sm:h-80 bg-poke-blue/20 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 w-full">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="min-w-0">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -140,7 +147,7 @@ export default function Home() {
                 <span className="text-sm text-gray-300">Premium Pokémon Experience</span>
               </motion.div>
 
-              <h1 className="hero-title font-display text-5xl sm:text-6xl lg:text-7xl font-black leading-tight mb-6">
+              <h1 className="hero-title font-display text-4xl sm:text-5xl lg:text-7xl font-black leading-tight mb-6">
                 <span className="text-white">Catch 'Em</span>
                 <br />
                 <span className="text-gradient">All & Beyond</span>
@@ -160,29 +167,34 @@ export default function Home() {
                 </RippleButton>
               </div>
 
-              <div className="hero-search max-w-md">
-                <SearchBar onSearch={handleSearch} placeholder="Search any Pokémon..." />
+              <div className="hero-search w-full max-w-md min-w-0">
+                <SearchBar
+                  onSearch={handleSearch}
+                  placeholder="Search any Pokémon..."
+                  suggestions={allNames}
+                  suggestionLinkBase="/pokemon"
+                />
               </div>
             </div>
 
-            <div className="relative flex justify-center">
+            <div className="relative flex justify-center min-w-0 overflow-visible">
               {heroPokemon && (
-                <div ref={pokemonRef} className="relative">
+                <div ref={pokemonRef} className="relative max-w-full">
                   <div className="absolute inset-0 bg-gradient-to-br from-poke-yellow/30 via-poke-red/20 to-poke-blue/30 rounded-full blur-3xl scale-110" />
                   <img
                     src={getPokemonImage(heroPokemon)}
                     alt={heroPokemon.name}
-                    className="relative w-72 sm:w-96 h-auto drop-shadow-2xl"
+                    className="relative w-56 sm:w-72 lg:w-96 h-auto max-w-full drop-shadow-2xl"
                   />
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                    className="absolute -inset-8 border border-poke-yellow/10 rounded-full"
+                    className="absolute -inset-4 sm:-inset-8 border border-poke-yellow/10 rounded-full pointer-events-none"
                   />
                   <motion.div
                     animate={{ rotate: -360 }}
                     transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-                    className="absolute -inset-16 border border-poke-blue/10 rounded-full"
+                    className="absolute -inset-8 sm:-inset-16 border border-poke-blue/10 rounded-full pointer-events-none"
                   />
                 </div>
               )}

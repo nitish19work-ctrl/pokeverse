@@ -4,12 +4,31 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/pokeball.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="PokéVerse — A premium Pokémon experience. Explore the Pokédex, build teams, compare stats, and discover legendary Pokémon." />
+    <meta name="description" content="PokéVerse — Explore every Pokémon, Mega Evolutions, regional forms, build teams, compare stats, and discover legendary Pokémon across all generations." />
+    <meta name="keywords" content="Pokémon, Pokédex, Mega Evolution, regional forms, team builder, compare Pokémon" />
     <meta name="theme-color" content="#0a0a0f" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PokéVerse — Premium Pokémon Experience" />
+    <meta property="og:description" content="Explore every Pokémon, Mega Evolutions, regional forms, and alternate forms." />
+    <meta property="og:site_name" content="PokéVerse" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PokéVerse — Premium Pokémon Experience" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>PokéVerse — Premium Pokémon Experience</title>
+    <script>
+      (function () {
+        try {
+          var dark = localStorage.getItem('pokeverse-theme');
+          dark = dark !== null ? JSON.parse(dark) : true;
+          var root = document.documentElement;
+          root.classList.toggle('dark', dark);
+          root.classList.toggle('light', !dark);
+          root.setAttribute('data-theme', dark ? 'dark' : 'light');
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

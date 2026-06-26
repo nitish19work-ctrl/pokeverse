@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import Layout from './components/layout/Layout';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -13,6 +12,7 @@ const Legendary = lazy(() => import('./pages/Legendary'));
 const Favorites = lazy(() => import('./pages/Favorites'));
 const TeamBuilder = lazy(() => import('./pages/TeamBuilder'));
 const Compare = lazy(() => import('./pages/Compare'));
+const Search = lazy(() => import('./pages/Search'));
 const About = lazy(() => import('./pages/About'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -32,9 +32,8 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route element={<Layout />}>
+          <Routes>
+            <Route element={<Layout />}>
                 <Route index element={<Home />} />
                 <Route path="pokedex" element={<Pokedex />} />
                 <Route path="pokemon/:id" element={<PokemonDetails />} />
@@ -43,12 +42,12 @@ export default function App() {
                 <Route path="legendary" element={<Legendary />} />
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="team-builder" element={<TeamBuilder />} />
+                <Route path="search" element={<Search />} />
                 <Route path="compare" element={<Compare />} />
                 <Route path="about" element={<About />} />
                 <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </AnimatePresence>
+            </Route>
+          </Routes>
         </Suspense>
       </BrowserRouter>
     </ThemeProvider>

@@ -39,9 +39,16 @@ export default function RippleButton({
   const classes = `relative overflow-hidden inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 cursor-pointer ${variants[variant]} ${className}`;
 
   if (to) {
+    const { disabled, ...linkProps } = props;
     return (
-      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        <Link to={to} className={classes} ref={buttonRef} onClick={handleClick} {...props}>
+      <motion.div whileHover={{ scale: disabled ? 1 : 1.05 }} whileTap={{ scale: disabled ? 1 : 0.95 }}>
+        <Link
+          to={to}
+          className={`${classes}${disabled ? ' opacity-50 pointer-events-none' : ''}`}
+          ref={buttonRef}
+          onClick={handleClick}
+          {...linkProps}
+        >
           {children}
         </Link>
       </motion.div>

@@ -1,23 +1,34 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const ThemeContext = createContext();
+const STORAGE_KEY = 'pokeverse-theme';
+
+export function applyTheme(darkMode) {
+  const root = document.documentElement;
+  root.classList.toggle('dark', darkMode);
+  root.classList.toggle('light', !darkMode);
+  root.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+}
+
+export function getStoredTheme() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored !== null) return JSON.parse(stored);
+  } catch {
+    /* ignore */
+  }
+  return true;
+}
 
 export function ThemeProvider({ children }) {
-  const [darkMode, setDarkMode] = useState(() => {
-    try {
-      const stored = localStorage.getItem('pokeverse-theme');
-      return stored ? JSON.parse(stored) : true;
-    } catch {
-      return true;
-    }
-  });
+  const [darkMode, setDarkMode] = useState(getStoredTheme);
 
   useEffect(() => {
-    localStorage.setItem('pokeverse-theme', JSON.stringify(darkMode));
-    document.documentElement.classList.toggle('dark', darkMode);
+    applyTheme(darkMode);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(darkMode));
   }, [darkMode]);
 
-  const toggleTheme = () => setDarkMode((prev) => !prev);
+  const toggleTheme = useCallback(() => setDarkMode((prev) => !prev), []);
 
   return (
     <ThemeContext.Provider value={{ darkMode, toggleTheme }}>

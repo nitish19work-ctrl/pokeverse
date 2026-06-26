@@ -1,47 +1,46 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { IoSwapHorizontal } from 'react-icons/io5';
+import { IoClose } from 'react-icons/io5';
 import ParticleBackground from '../components/ui/ParticleBackground';
 import SearchBar from '../components/ui/SearchBar';
 import TypeBadge from '../components/ui/TypeBadge';
+import Seo from '../components/ui/Seo';
 import { DetailSkeleton } from '../components/ui/LoadingSkeleton';
 import { FadeIn } from '../components/ui/PageTransition';
-import { fetchPokemon, getPokemonImage, fetchAllPokemonNames } from '../api/pokeapi';
+import { fetchPokemon, getPokemonImage, fetchAllPokemonEntries } from '../api/pokeapi';
 import { formatPokemonName, formatHeight, formatWeight, getTotalStats } from '../utils/helpers';
 import { STAT_NAMES } from '../data/constants';
 
-function ComparisonBar({ label, value1, value2, maxValue = 255 }) {
-  const winner = value1 > value2 ? 1 : value2 > value1 ? 2 : 0;
+const SLOT_COLORS = ['#ffd700', '#3b82f6', '#ef4444', '#a855f7'];
+const MAX_COMPARE = 4;
 
+function ComparisonBar({ label, values, maxValue = 255 }) {
+  const max = Math.max(...values, 1);
   return (
     <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className={`font-bold ${winner === 1 ? 'text-poke-yellow' : 'text-gray-400'}`}>
-          {value1}
-        </span>
-        <span className="text-gray-500 font-medium">{label}</span>
-        <span className={`font-bold ${winner === 2 ? 'text-poke-yellow' : 'text-gray-400'}`}>
-          {value2}
-        </span>
+      <div className="flex justify-between items-center gap-2">
+        <span className="text-xs text-gray-500 font-medium w-16 shrink-0">{label}</span>
+        <div className="flex-1 flex gap-1">
+          {values.map((v, i) => (
+            <span key={i} className="text-xs font-bold flex-1 text-center" style={{ color: SLOT_COLORS[i] }}>
+              {v}
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="flex gap-2 items-center">
-        <div className="flex-1 h-3 bg-poke-dark-4 rounded-full overflow-hidden flex justify-end">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${(value1 / maxValue) * 100}%` }}
-            transition={{ duration: 0.8 }}
-            className={`h-full rounded-full ${winner === 1 ? 'bg-poke-yellow' : 'bg-gray-600'}`}
-          />
-        </div>
-        <div className="flex-1 h-3 bg-poke-dark-4 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${(value2 / maxValue) * 100}%` }}
-            transition={{ duration: 0.8 }}
-            className={`h-full rounded-full ${winner === 2 ? 'bg-poke-blue' : 'bg-gray-600'}`}
-          />
-        </div>
+      <div className="flex gap-2">
+        {values.map((v, i) => (
+          <div key={i} className="flex-1 h-2.5 bg-poke-dark-4 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${(v / maxValue) * 100}%` }}
+              transition={{ duration: 0.8, delay: i * 0.05 }}
+              className="h-full rounded-full"
+              style={{ backgroundColor: SLOT_COLORS[i] }}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -49,52 +48,63 @@ function ComparisonBar({ label, value1, value2, maxValue = 255 }) {
 
 export default function Compare() {
   const [searchParams] = useSearchParams();
-  const [pokemon1, setPokemon1] = useState(null);
-  const [pokemon2, setPokemon2] = useState(null);
+  const [slots, setSlots] = useState(Array(MAX_COMPARE).fill(null));
   const [loading, setLoading] = useState(false);
   const [allNames, setAllNames] = useState([]);
 
   useEffect(() => {
-    fetchAllPokemonNames().then(setAllNames).catch(() => {});
+    fetchAllPokemonEntries().then(setAllNames).catch(() => {});
   }, []);
 
   useEffect(() => {
     const p1 = searchParams.get('p1');
     if (p1) {
-      fetchPokemon(p1).then(setPokemon1).catch(() => {});
+      fetchPokemon(p1).then((data) => {
+        setSlots((prev) => {
+          const updated = [...prev];
+          updated[0] = data;
+          return updated;
+        });
+      }).catch(() => {});
     }
   }, [searchParams]);
 
-  const handleSelect = async (query, slot) => {
+  const handleSelect = async (query, slotIndex) => {
     if (!query) return;
-    const match = allNames.find((p) => p.name.toLowerCase() === query.toLowerCase());
-    if (!match) {
-      const partial = allNames.find((p) => p.name.toLowerCase().includes(query.toLowerCase()));
-      if (!partial) return;
-      setLoading(true);
-      const data = await fetchPokemon(partial.name);
-      if (slot === 1) setPokemon1(data);
-      else setPokemon2(data);
-      setLoading(false);
-      return;
-    }
     setLoading(true);
-    const data = await fetchPokemon(match.name);
-    if (slot === 1) setPokemon1(data);
-    else setPokemon2(data);
-    setLoading(false);
+    try {
+      let target = query.toLowerCase();
+      const match = allNames.find((p) => p.name.toLowerCase().includes(target));
+      if (match) target = match.name;
+      const data = await fetchPokemon(target);
+      setSlots((prev) => {
+        const updated = [...prev];
+        updated[slotIndex] = data;
+        return updated;
+      });
+    } catch {
+      // not found
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const swapPokemon = () => {
-    const temp = pokemon1;
-    setPokemon1(pokemon2);
-    setPokemon2(temp);
+  const removeSlot = (index) => {
+    setSlots((prev) => {
+      const updated = [...prev];
+      updated[index] = null;
+      return updated;
+    });
   };
 
-  if (loading) return <DetailSkeleton />;
+  const filled = slots.filter(Boolean);
+  const statNames = filled[0]?.stats.map((s) => s.stat.name) || [];
+
+  if (loading && filled.length === 0) return <DetailSkeleton />;
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen overflow-x-hidden">
+      <Seo title="Compare Pokémon" description="Compare up to 4 Pokémon side by side with animated stat charts." path="/compare" />
       <ParticleBackground count={25} color="rgba(168, 85, 247, 0.4)" />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -102,140 +112,99 @@ export default function Compare() {
           <h1 className="font-display text-4xl sm:text-5xl font-black text-white mb-2">
             Battle <span className="text-gradient">Comparison</span>
           </h1>
-          <p className="text-gray-400 mb-10">
-            Compare stats, abilities, and types side by side
-          </p>
+          <p className="text-gray-400 mb-10">Compare up to 4 Pokémon — stats, types, speed, and abilities</p>
         </FadeIn>
 
-        {/* Pokemon Selectors */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {[1, 2].map((slot) => {
-            const pokemon = slot === 1 ? pokemon1 : pokemon2;
-            return (
-              <div key={slot} className="glass rounded-2xl p-6">
-                {pokemon ? (
-                  <div className="text-center">
-                    <img
-                      src={getPokemonImage(pokemon)}
-                      alt={pokemon.name}
-                      className="w-32 h-32 mx-auto object-contain mb-3"
-                    />
-                    <h3 className="font-display font-bold text-xl text-white capitalize mb-2">
-                      {formatPokemonName(pokemon.name)}
-                    </h3>
-                    <div className="flex gap-1 justify-center mb-3">
-                      {pokemon.types.map(({ type }) => (
-                        <TypeBadge key={type.name} type={type.name} size="sm" />
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-400">
-                      BST: <span className="text-poke-yellow font-bold">{getTotalStats(pokemon.stats)}</span>
-                    </p>
-                    <button
-                      onClick={() => {
-                        if (slot === 1) setPokemon1(null);
-                        else setPokemon2(null);
-                      }}
-                      className="text-xs text-poke-red mt-3 hover:underline"
-                    >
-                      Remove
-                    </button>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {slots.map((pokemon, index) => (
+            <div key={index} className="glass rounded-2xl p-4 relative" style={{ borderTop: `3px solid ${SLOT_COLORS[index]}` }}>
+              {pokemon ? (
+                <div className="text-center">
+                  <button type="button" onClick={() => removeSlot(index)} className="absolute top-2 right-2 text-gray-400 hover:text-poke-red">
+                    <IoClose />
+                  </button>
+                  <img src={getPokemonImage(pokemon)} alt={pokemon.name} loading="lazy" className="w-24 h-24 mx-auto object-contain mb-2" />
+                  <h3 className="font-display font-bold text-white capitalize text-sm mb-2">{formatPokemonName(pokemon.name)}</h3>
+                  <div className="flex gap-1 justify-center flex-wrap mb-2">
+                    {pokemon.types.map(({ type }) => <TypeBadge key={type.name} type={type.name} size="sm" />)}
                   </div>
-                ) : (
-                  <div>
-                    <p className="text-sm text-gray-400 mb-3">Select Pokémon {slot}</p>
-                    <SearchBar
-                      onSearch={(q) => handleSelect(q, slot)}
-                      placeholder={`Search Pokémon ${slot}...`}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  <p className="text-xs text-gray-400">
+                    BST: <span className="text-poke-yellow font-bold">{getTotalStats(pokemon.stats)}</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Speed: <span className="text-white font-bold">{pokemon.stats.find((s) => s.stat.name === 'speed')?.base_stat}</span>
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-xs text-gray-400 mb-2">Pokémon {index + 1}</p>
+                  <SearchBar
+                    onSearch={(q) => handleSelect(q, index)}
+                    placeholder="Search..."
+                    suggestions={allNames}
+                    suggestionLinkBase=""
+                  />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
-        {pokemon1 && pokemon2 && (
+        {filled.length >= 2 && (
           <>
-            <div className="flex justify-center mb-8">
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 180 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={swapPokemon}
-                className="p-3 rounded-full glass hover:bg-white/10 transition-colors"
-              >
-                <IoSwapHorizontal className="text-poke-yellow text-2xl" />
-              </motion.button>
-            </div>
-
-            {/* Stat Comparison */}
             <FadeIn>
               <div className="glass rounded-2xl p-6 mb-8">
-                <h3 className="font-display font-bold text-white mb-6 text-center">Stat Comparison</h3>
+                <h3 className="font-display font-bold text-white mb-6 text-center">Stat Comparison Chart</h3>
                 <div className="space-y-4">
-                  {pokemon1.stats.map((s, i) => {
-                    const stat2 = pokemon2.stats.find((s2) => s2.stat.name === s.stat.name);
-                    return (
-                      <ComparisonBar
-                        key={s.stat.name}
-                        label={STAT_NAMES[s.stat.name] || s.stat.name}
-                        value1={s.base_stat}
-                        value2={stat2?.base_stat || 0}
-                      />
-                    );
-                  })}
+                  {statNames.map((statName) => (
+                    <ComparisonBar
+                      key={statName}
+                      label={STAT_NAMES[statName] || statName}
+                      values={slots.map((p) => p?.stats.find((s) => s.stat.name === statName)?.base_stat || 0)}
+                    />
+                  ))}
                   <ComparisonBar
                     label="Total"
-                    value1={getTotalStats(pokemon1.stats)}
-                    value2={getTotalStats(pokemon2.stats)}
+                    values={slots.map((p) => (p ? getTotalStats(p.stats) : 0))}
                     maxValue={800}
                   />
                 </div>
               </div>
             </FadeIn>
 
-            {/* Details Comparison */}
-            <div className="grid sm:grid-cols-2 gap-6">
+            <div className="grid sm:grid-cols-2 gap-4 mb-8">
               {[
-                { label: 'Height', v1: formatHeight(pokemon1.height), v2: formatHeight(pokemon2.height) },
-                { label: 'Weight', v1: formatWeight(pokemon1.weight), v2: formatWeight(pokemon2.weight) },
-              ].map(({ label, v1, v2 }) => (
+                { label: 'Height', get: (p) => formatHeight(p.height) },
+                { label: 'Weight', get: (p) => formatWeight(p.weight) },
+              ].map(({ label, get }) => (
                 <div key={label} className="glass rounded-xl p-4">
                   <h4 className="text-sm text-gray-400 mb-3 text-center">{label}</h4>
-                  <div className="flex justify-between">
-                    <span className="text-white font-semibold">{v1}</span>
-                    <span className="text-white font-semibold">{v2}</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {slots.map((p, i) => p && (
+                      <p key={i} className="text-xs text-white font-semibold text-center">{get(p)}</p>
+                    ))}
                   </div>
                 </div>
               ))}
+            </div>
 
-              <div className="glass rounded-xl p-4 sm:col-span-2">
-                <h4 className="text-sm text-gray-400 mb-3 text-center">Abilities</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    {pokemon1.abilities.map(({ ability }) => (
-                      <p key={ability.name} className="text-sm text-white capitalize text-center">
-                        {formatPokemonName(ability.name)}
-                      </p>
+            <div className="glass rounded-xl p-4">
+              <h4 className="text-sm text-gray-400 mb-3 text-center">Abilities</h4>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {slots.map((p, i) => p && (
+                  <div key={i} className="space-y-1">
+                    {p.abilities.map(({ ability }) => (
+                      <p key={ability.name} className="text-xs text-white capitalize text-center">{formatPokemonName(ability.name)}</p>
                     ))}
                   </div>
-                  <div className="space-y-1">
-                    {pokemon2.abilities.map(({ ability }) => (
-                      <p key={ability.name} className="text-sm text-white capitalize text-center">
-                        {formatPokemonName(ability.name)}
-                      </p>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </>
         )}
 
-        {(!pokemon1 || !pokemon2) && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Select two Pokémon to compare their stats</p>
-          </div>
+        {filled.length < 2 && (
+          <div className="text-center py-12 text-gray-500">Add at least 2 Pokémon to compare</div>
         )}
       </div>
     </div>
